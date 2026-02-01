@@ -67,45 +67,46 @@ class CRUD_CSV:
         # Remove the old file & rename the new file with the old file name to maintain consistency
         os.remove(FILE_PATH)
         os.rename(NEW_FILE_PATH, FILE_PATH)
+    
+    def open_csv_and_loop_search(self, searching_criteria, value):
+        with open(FILE_PATH, mode='r', encoding='utf-8') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            if searching_criteria == "Roll":
+                for row in csv_reader:
+                    if value.lower() in row.get('Roll').lower():
+                        return row
+            elif searching_criteria == "Email":
+                for row in csv_reader:
+                    if value in row.get('Email').lower():
+                        return row
+            else:
+                for row in csv_reader:
+                    if value.lower() in row.get('Name').lower():
+                        return row
 
     def search_student(self):
         x = input("Enter search term (name/email/roll): ")
+        data = dict()
         if x:
             try:
                 int(x)
-                print("Search by roll number")
-                with open(FILE_PATH, mode='r', encoding='utf-8') as csv_file:
-                    csv_reader = csv.DictReader(csv_file)
-                    for row in csv_reader:
-                        if f"{x}".lower() in row.get('Roll').lower():
-                            print("Search Result:")
-                            print(f"Name: {row.get('Name')}")
-                            print(f"Roll: {row.get('Roll')}")
-                            print(f"Email: {row.get('Email')}")
-                            print(f"Department: {row.get('Department')}")
+                data = self.open_csv_and_loop_search("Roll", x)
             except ValueError:
-                print("Search by email")
                 email_pattern = r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+"
                 email = re.fullmatch(email_pattern, x)
                 if email is not None:
-                    print(f"Email: {email.string}")
-                    with open(FILE_PATH, mode='r', encoding='utf-8') as csv_file:
-                        csv_reader = csv.DictReader(csv_file)
-                        for row in csv_reader:
-                            if email.string.lower() in row.get('Email').lower():
-                                data = [row.get('Name'), row.get('Roll'), row.get('Email'), row.get('Department')]
-                    print("Search by Email", data)
+                    data = self.open_csv_and_loop_search("Email", email.string)
                 else:
-                    print("Search by name")
-                    # print(f"{x}")
-                    # data = list()
-                    with open(FILE_PATH, mode='r', encoding='utf-8') as csv_file:
-                        csv_reader = csv.DictReader(csv_file)
-                        for row in csv_reader:
-                            if f"{x}".lower() in row.get('Name').lower():
-                                print(f"Found student by name: {row.get('Name')}")
-                                data = [row.get('Name'), row.get('Roll'), row.get('Email'), row.get('Department')]
-                    print("Search by Name", data)
+                    data = self.open_csv_and_loop_search("Name", x)
+
+            if data:
+                print("Search Result:")
+                print(f"Name: {data.get('Name')}")
+                print(f"Roll: {data.get('Roll')}")
+                print(f"Email: {data.get('Email')}")
+                print(f"Department: {data.get('Department')}")
+            else:
+                print("No student record is found!")
         else:
             print("Empty input is not allowed!")
             self.search_student()
