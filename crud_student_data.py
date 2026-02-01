@@ -2,12 +2,14 @@ import os, csv, time
 
 FILE_PATH = './students.csv'
 
+NEW_FILE_PATH = './updated_student.csv'
+
 CSV_HEADER = ['Name', 'Roll', 'Email', 'Department']
 
 class CRUD_CSV:
     def __init__(self):
         pass
-    
+
     def user_input(self) -> list:
         usr_name = input("Enter student name: ")
         usr_roll = input("Enter roll number: ")
@@ -21,12 +23,61 @@ class CRUD_CSV:
             data = self.user_input()
             csv_writer.writerow(data)
             print("Student record added successfully!")
+    
+    def student_list(self):
+        with open(FILE_PATH, mode='r', encoding='utf-8') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+
+            for index, row in enumerate(csv_reader):
+                print(f"{index+1}. Name: {row.get('Name')}")
+                print(f"Roll: {row.get('Roll')}")
+                print(f"Email: {row.get('Email')}")
+                print(f"Department: {row.get('Department')} \n")
+            print(f"{"\n"*2}")
+    
+    def remove_student_confirmation(self, roll):
+        with open(FILE_PATH, mode='r', encoding='utf-8') as csv_file:
+            csv_file = csv.DictReader(csv_file)
+            for row in csv_file:
+                if row.get('Roll') == f"{roll}":
+                    x = input(f"Are you sure you want to delete student with roll number {row.get('Roll')}? (y/n): ")
+                    if x.isalpha() and (x.lower() == "y" or x.lower() == "yes"):
+                        return True
+                    else:
+                        return False
+                else:
+                    print(f"Error: Student with the roll number {roll} does not exist!")
+
+                    
+    
+    def remove_student(self, roll):
+        # Open the file in both read & write mode using the same 'with' block since the file.
+        # Mental Model: Rewrite the rows in a separate file without the specified row, since literal deletion doesn't work on CSV file.
+        with open(FILE_PATH, mode='r', encoding='utf-8') as csv_file_read, \
+            open(NEW_FILE_PATH, mode='w', newline='', encoding='utf-8') as csv_file_write:
+            csv_reader = csv.DictReader(csv_file_read)
+            csv_writer = csv.DictWriter(csv_file_write, fieldnames=CSV_HEADER)
+
+            # Create header in the new CSV file
+            csv_writer.writeheader()
+
+            for row in csv_reader:
+                # Write every row from old to new CSV file except the matched roll number
+                if row.get('Roll') != f"{roll}":
+                    csv_writer.writerow(row)
+        
+        # Remove the old file & rename the new file with the old file name to maintain consistency
+        os.remove(FILE_PATH)
+        os.rename(NEW_FILE_PATH, FILE_PATH)
+
+
 
 
 class LoadCSV:
     def __init__(self):
         if os.path.exists(FILE_PATH):
             print("Welcome to the Student Record Management System!")
+            print("Loading student records from students.csv ... Done!")
         else:
             # Create a new file, but it will return an error if the file exist
             with open(FILE_PATH, 'x', newline='', encoding='utf-8') as new_csv:
@@ -48,7 +99,6 @@ class LoadCSV:
             print("Please select a valid input!")
 
     def load_options(self):
-        print(f"Loading student records from students.csv ... Done!")
         print(f"{"="*10} MENU {"="*10}")
         print("1. Add Student")
         print("2. View Students")
@@ -65,7 +115,15 @@ class LoadCSV:
                 self.crud_csv.add_student('add_opt')
             case 2:
                 print("View students list")
+                self.crud_csv.student_list()
             case 3:
                 print("Search student")
             case 4:
                 print("Remove a student")
+                try:
+                    x = int(input("Enter the roll number of the student to delete: "))
+                    if self.crud_csv.remove_student_confirmation(x):
+                        self.crud_csv.remove_student(x)
+                        print("Student record deleted successfully!")
+                except ValueError:
+                    print("Enter a valid roll number. Hint: Integer Number")
