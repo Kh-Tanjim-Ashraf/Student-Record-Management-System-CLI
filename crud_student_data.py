@@ -11,6 +11,9 @@ class CRUD_CSV:
         pass
 
     def user_input(self) -> list:
+        """
+        Take user input to add new student record
+        """
         usr_name = input("Enter student name: ")
         usr_roll = input("Enter roll number: ")
         usr_email = input("Enter email address: ")
@@ -18,6 +21,9 @@ class CRUD_CSV:
         return [usr_name, usr_roll, usr_email, usr_deprmnt]
         
     def add_student(self, data):
+        """
+        This function create new student record into the CSV file
+        """
         with open(FILE_PATH, mode='a', newline='', encoding='utf-8') as csv_file:
             csv_writer = csv.writer(csv_file)
             data = self.user_input()
@@ -25,6 +31,9 @@ class CRUD_CSV:
             print("Student record added successfully!")
     
     def student_list(self):
+        """
+        View all students list from the CSV file
+        """
         with open(FILE_PATH, mode='r', encoding='utf-8') as csv_file:
             csv_reader = csv.DictReader(csv_file)
 
@@ -36,6 +45,9 @@ class CRUD_CSV:
             print(f"{"\n"*2}")
     
     def remove_student_confirmation(self, roll):
+        """
+        This function initially checks if the student with such roll number exists & if found record then ask for confirmation before deleting the record from the CSV file.
+        """
         with open(FILE_PATH, mode='r', encoding='utf-8') as csv_file:
             csv_file = csv.DictReader(csv_file)
             for row in csv_file:
@@ -49,6 +61,9 @@ class CRUD_CSV:
                     print(f"Error: Student with the roll number {roll} does not exist!")            
     
     def remove_student(self, roll):
+        """
+        This function opens the CSV file in both read and write mode to rewrite the data while iterating each row except the specified roll number.
+        """
         # Open the file in both read & write mode using the same 'with' block since the file.
         # Mental Model: Rewrite the rows in a separate file without the specified row, since literal deletion doesn't work on CSV file.
         with open(FILE_PATH, mode='r', encoding='utf-8') as csv_file_read, \
@@ -68,7 +83,11 @@ class CRUD_CSV:
         os.remove(FILE_PATH)
         os.rename(NEW_FILE_PATH, FILE_PATH)
     
+    # Open CSV & execute search based on searching criteria
     def open_csv_and_loop_search(self, searching_criteria, value):
+        """
+        This function opens the CSV file & iterates each row based on the searching criteria.
+        """
         with open(FILE_PATH, mode='r', encoding='utf-8') as csv_file:
             csv_reader = csv.DictReader(csv_file)
             if searching_criteria == "Roll":
@@ -85,9 +104,14 @@ class CRUD_CSV:
                         return row
 
     def search_student(self):
+        """
+        This function invokes the "open_csv_and_loop_search()" method based on the Name, Email or Roll number.
+        """
         x = input("Enter search term (name/email/roll): ")
         data = dict()
+        # Check if the input is not empty
         if x:
+            # Mental model: If user inserts only integer value, make search by roll number. If it fails, then try to check if the input is a valid email, then search by email. If both does not bring any light, then search the CSV file based on the name criteria.
             try:
                 int(x)
                 data = self.open_csv_and_loop_search("Roll", x)
@@ -98,7 +122,7 @@ class CRUD_CSV:
                     data = self.open_csv_and_loop_search("Email", email.string)
                 else:
                     data = self.open_csv_and_loop_search("Name", x)
-
+            # Show the result if the open & search through looping csv file returns any data
             if data:
                 print("Search Result:")
                 print(f"Name: {data.get('Name')}")
