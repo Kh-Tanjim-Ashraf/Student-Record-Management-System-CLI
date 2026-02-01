@@ -18,17 +18,30 @@ class CRUD_CSV:
         usr_roll = input("Enter roll number: ")
         usr_email = input("Enter email address: ")
         usr_deprmnt = input("Enter department: ")
-        return [usr_name, usr_roll, usr_email, usr_deprmnt]
+        return {"Name" : usr_name, "Roll" : usr_roll, "Email" : usr_email, "Department": usr_deprmnt}
+    
+    def check_duplicate_roll_number(self, roll) -> bool:
+        with open(FILE_PATH, mode='r', encoding='utf-8') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            for row in csv_reader:
+                if row.get('Roll') == roll:
+                    return True
+            return False
         
     def add_student(self, data):
         """
         This function create new student record into the CSV file
         """
         with open(FILE_PATH, mode='a', newline='', encoding='utf-8') as csv_file:
-            csv_writer = csv.writer(csv_file)
+            csv_writer = csv.DictWriter(csv_file, fieldnames=CSV_HEADER)
+            # Take user input
             data = self.user_input()
-            csv_writer.writerow(data)
-            print("Student record added successfully!")
+            # Check for duplicate roll number, return True=Duplicate or False=Not Duplicate
+            if self.check_duplicate_roll_number(data.get('Roll')):
+                print("Error: Roll number already exists for another student.")
+            else:
+                csv_writer.writerow(data)
+                print("Student record added successfully!")
     
     def student_list(self):
         """
@@ -164,7 +177,7 @@ class LoadCSV:
             print("Please select a valid input!")
 
     def load_options(self):
-        print(f"{"="*10} MENU {"="*10}")
+        print(f"\n {"="*10} MENU {"="*10}")
         print("1. Add Student")
         print("2. View Students")
         print("3. Search Student")
