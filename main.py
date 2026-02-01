@@ -6,6 +6,7 @@ def main():
         option = load_csv.load_options()
         # The loop will break if the user selects option 5, otherwise execute CRUD methods
         if option == 5:
+            print("Thank you for using the Student Record Management System. Goodbye!")
             break
         else:
             load_csv.match_option(option)

@@ -10,14 +10,56 @@ class CRUD_CSV:
     def __init__(self):
         pass
 
-    def user_input(self) -> list:
+    def user_input(self) -> dict:
         """
         Take user input to add new student record
         """
-        usr_name = input("Enter student name: ")
-        usr_roll = input("Enter roll number: ")
-        usr_email = input("Enter email address: ")
-        usr_deprmnt = input("Enter department: ")
+        data = dict()
+        usr_name = input("Enter student name: ").strip()
+
+        if usr_name:
+            uname_pattern = r"[a-zA-Z ]+"
+            if re.fullmatch(uname_pattern, usr_name) != None:
+                data["Name"] = usr_name
+                usr_roll = input("Enter roll number: ").strip()
+                if usr_roll:
+                    try:
+                        usr_roll = int(usr_roll)
+                        data["Roll"] = usr_roll
+
+                        usr_email = input("Enter email address: ").strip()
+                        if usr_email:
+                            email_pattern = r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+"
+                            email = re.fullmatch(email_pattern, usr_email)
+                            if email is not None:
+                                data["Email"] = usr_email
+
+                                usr_deprmnt = input("Enter department: ").strip()
+                                if usr_deprmnt:
+                                    data["Department"] = usr_deprmnt
+                                else:
+                                    print("Empty input is not allowed!")
+                                    return None
+                            else:
+                                print("Please insert a valid email address!")
+                                return None
+                        else:
+                            print("Empty input is not allowed!")
+                            return None
+                        
+                    except ValueError:
+                        print("Roll number must be an integer")
+                        return None
+                else:
+                    print("Empty input is not allowed!")
+                    return None
+            else:
+                print("Student name must be a string")
+                return None
+        else:
+            print("Empty input is not allowed!")
+            return None
+        return data
         return {"Name" : usr_name, "Roll" : usr_roll, "Email" : usr_email, "Department": usr_deprmnt}
     
     def check_duplicate_roll_number(self, roll) -> bool:
@@ -36,12 +78,13 @@ class CRUD_CSV:
             csv_writer = csv.DictWriter(csv_file, fieldnames=CSV_HEADER)
             # Take user input
             data = self.user_input()
-            # Check for duplicate roll number, return True=Duplicate or False=Not Duplicate
-            if self.check_duplicate_roll_number(data.get('Roll')):
-                print("Error: Roll number already exists for another student.")
-            else:
-                csv_writer.writerow(data)
-                print("Student record added successfully!")
+            if data != None:
+                # Check for duplicate roll number, return True=Duplicate or False=Not Duplicate
+                if self.check_duplicate_roll_number(data.get('Roll')):
+                    print("Error: Roll number already exists for another student.")
+                else:
+                    # csv_writer.writerow(data)
+                    print("Student record added successfully!")
     
     def student_list(self):
         """
