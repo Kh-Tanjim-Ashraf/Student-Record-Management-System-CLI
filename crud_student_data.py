@@ -1,4 +1,4 @@
-import os, csv, time
+import os, csv, time, re
 
 FILE_PATH = './students.csv'
 
@@ -46,9 +46,7 @@ class CRUD_CSV:
                     else:
                         return False
                 else:
-                    print(f"Error: Student with the roll number {roll} does not exist!")
-
-                    
+                    print(f"Error: Student with the roll number {roll} does not exist!")            
     
     def remove_student(self, roll):
         # Open the file in both read & write mode using the same 'with' block since the file.
@@ -69,6 +67,48 @@ class CRUD_CSV:
         # Remove the old file & rename the new file with the old file name to maintain consistency
         os.remove(FILE_PATH)
         os.rename(NEW_FILE_PATH, FILE_PATH)
+
+    def search_student(self):
+        x = input("Enter search term (name/email/roll): ")
+        if x:
+            try:
+                int(x)
+                print("Search by roll number")
+                with open(FILE_PATH, mode='r', encoding='utf-8') as csv_file:
+                    csv_reader = csv.DictReader(csv_file)
+                    for row in csv_reader:
+                        if f"{x}".lower() in row.get('Roll').lower():
+                            print("Search Result:")
+                            print(f"Name: {row.get('Name')}")
+                            print(f"Roll: {row.get('Roll')}")
+                            print(f"Email: {row.get('Email')}")
+                            print(f"Department: {row.get('Department')}")
+            except ValueError:
+                print("Search by email")
+                email_pattern = r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+"
+                email = re.fullmatch(email_pattern, x)
+                if email is not None:
+                    print(f"Email: {email.string}")
+                    with open(FILE_PATH, mode='r', encoding='utf-8') as csv_file:
+                        csv_reader = csv.DictReader(csv_file)
+                        for row in csv_reader:
+                            if email.string.lower() in row.get('Email').lower():
+                                data = [row.get('Name'), row.get('Roll'), row.get('Email'), row.get('Department')]
+                    print("Search by Email", data)
+                else:
+                    print("Search by name")
+                    # print(f"{x}")
+                    # data = list()
+                    with open(FILE_PATH, mode='r', encoding='utf-8') as csv_file:
+                        csv_reader = csv.DictReader(csv_file)
+                        for row in csv_reader:
+                            if f"{x}".lower() in row.get('Name').lower():
+                                print(f"Found student by name: {row.get('Name')}")
+                                data = [row.get('Name'), row.get('Roll'), row.get('Email'), row.get('Department')]
+                    print("Search by Name", data)
+        else:
+            print("Empty input is not allowed!")
+            self.search_student()
 
 
 
@@ -118,6 +158,7 @@ class LoadCSV:
                 self.crud_csv.student_list()
             case 3:
                 print("Search student")
+                self.crud_csv.search_student()
             case 4:
                 print("Remove a student")
                 try:
