@@ -65,10 +65,15 @@ class CRUD_CSV:
     def check_duplicate_roll_number(self, roll) -> bool:
         with open(FILE_PATH, mode='r', encoding='utf-8') as csv_file:
             csv_reader = csv.DictReader(csv_file)
+            # print(f"Roll {roll}")
             for row in csv_reader:
-                if row.get('Roll') == roll:
+                # print(f"roll: {row.get('Roll')}")
+                if row.get('Roll') == str(roll):
+                    # print("Duplicate roll number")
                     return True
-            return False
+            else:
+                # print("New roll number")
+                return False
         
     def add_student(self, data):
         """
@@ -78,12 +83,14 @@ class CRUD_CSV:
             csv_writer = csv.DictWriter(csv_file, fieldnames=CSV_HEADER)
             # Take user input
             data = self.user_input()
+            # print(f"user input: {data}")
             if data != None:
                 # Check for duplicate roll number, return True=Duplicate or False=Not Duplicate
+                # print(f"check duplicate roll: {self.check_duplicate_roll_number(data.get('Roll'))}")
                 if self.check_duplicate_roll_number(data.get('Roll')):
                     print("Error: Roll number already exists for another student.")
                 else:
-                    # csv_writer.writerow(data)
+                    csv_writer.writerow(data)
                     print("Student record added successfully!")
     
     def student_list(self):
